@@ -5,6 +5,7 @@
   - { name: labels, type: json }
   - { name: name, type: string, isRequired: true }
   - { name: description, type: string, isRequired: true }
+  - { name: repoUrl, type: string, isRequired: true }
   - { name: vault, type: boolean, isRequired: true }
   - { name: kubeBinary, type: string, isRequired: true }
   - { name: pullRequestGateway, type: string }
@@ -288,6 +289,7 @@
   - { name: e2eTests, type: string, isList: true }
 
 - name: GcpProject_v1
+  interface: ExternalResourcesProvisioner_v1
   fields:
   - { name: schema, type: string, isRequired: true }
   - { name: path, type: string, isRequired: true }
@@ -528,7 +530,15 @@
   - { name: multi_az, type: boolean, isRequired: true }
 
 - name: ClusterSpec_v1
+  isInterface: true
+  interfaceResolve:
+    strategy: fieldMap
+    field: product
+    fieldMap:
+      osd: ClusterSpecOSD_v1
+      rosa: ClusterSpecROSA_v1
   fields:
+  - { name: product, type: string, isRequired: true}
   - { name: id, type: string }
   - { name: external_id, type: string }
   - { name: provider, type: string, isRequired: true }
@@ -539,8 +549,46 @@
   - { name: multi_az, type: boolean, isRequired: true }
   - { name: nodes, type: int }
   - { name: instance_type, type: string, isRequired: true }
+  - { name: private, type: boolean, isRequired: true }
+  - { name: provision_shard_id, type: string }
+  - { name: autoscale, type: ClusterSpecAutoScale_v1 }
+  - { name: disable_user_workload_monitoring, type: boolean }
+
+- name: ClusterSpecOSD_v1
+  interface: ClusterSpec_v1
+  fields:
+  - { name: product, type: string, isRequired: true}
+  - { name: id, type: string }
+  - { name: external_id, type: string }
+  - { name: provider, type: string, isRequired: true }
+  - { name: region, type: string, isRequired: true }
+  - { name: channel, type: string, isRequired: true }
+  - { name: version, type: string, isRequired: true }
+  - { name: initial_version, type: string, isRequired: true }
+  - { name: multi_az, type: boolean, isRequired: true }
+  - { name: nodes, type: int }
+  - { name: instance_type, type: string, isRequired: true }
+  - { name: private, type: boolean, isRequired: true }
+  - { name: provision_shard_id, type: string }
+  - { name: autoscale, type: ClusterSpecAutoScale_v1 }
+  - { name: disable_user_workload_monitoring, type: boolean }
   - { name: storage, type: int, isRequired: true }
   - { name: load_balancers, type: int, isRequired: true }
+
+- name: ClusterSpecROSA_v1
+  interface: ClusterSpec_v1
+  fields:
+  - { name: product, type: string, isRequired: true}
+  - { name: id, type: string }
+  - { name: external_id, type: string }
+  - { name: provider, type: string, isRequired: true }
+  - { name: region, type: string, isRequired: true }
+  - { name: channel, type: string, isRequired: true }
+  - { name: version, type: string, isRequired: true }
+  - { name: initial_version, type: string, isRequired: true }
+  - { name: multi_az, type: boolean, isRequired: true }
+  - { name: nodes, type: int }
+  - { name: instance_type, type: string, isRequired: true }
   - { name: private, type: boolean, isRequired: true }
   - { name: provision_shard_id, type: string }
   - { name: autoscale, type: ClusterSpecAutoScale_v1 }
@@ -698,7 +746,7 @@
   - { name: managedGroups, type: string, isList: true }
   - { name: managedClusterRoles, type: boolean }
   - { name: ocm, type: OpenShiftClusterManager_v1 }
-  - { name: spec, type: ClusterSpec_v1 }
+  - { name: spec, type: ClusterSpec_v1, isInterface: true }
   - { name: externalConfiguration, type: ClusterExternalConfiguration_v1 }
   - { name: upgradePolicy, type: ClusterUpgradePolicy_v1 }
   - { name: additionalRouters, type: ClusterAdditionalRouter_v1, isList: true }
@@ -782,7 +830,16 @@
   - { name: accessLevel, type: string, isRequired: true }
   - { name: default, type: boolean }
 
+- name: ExternalResourcesProvisioner_v1
+  isInterface: true
+  interfaceResolve:
+    strategy: fieldMap
+    fieldMap: {}
+  fields:
+  - { name: name, type: string, isRequired: true }
+
 - name: AWSAccount_v1
+  interface: ExternalResourcesProvisioner_v1
   fields:
   - { name: schema, type: string, isRequired: true }
   - { name: path, type: string, isRequired: true }
@@ -806,6 +863,7 @@
   - { name: premiumSupport, type: boolean, isRequired: true }
   - { name: partition, type: string }
   - { name: sharing, type: AWSAccountSharingOption_v1, isList: true, isInterface: true }
+  - { name: terraformState, type: TerraformStateAWS_v1, isRequired: false }
   - name: ecrs
     type: AWSECR_v1
     isList: true
@@ -911,6 +969,29 @@
   - { name: filter_prefix, type: string}
   - { name: filter_suffix, type: string}
 
+- name: TerraformState_v1
+  isInterface: true
+  interfaceResolve:
+    strategy: fieldMap
+    field: provider
+    fieldMap:
+      s3: TerraformStateAWS_v1
+  fields:
+  - { name: provider, type: string, isRequired: false }
+
+- name: TerraformStateAWS_v1
+  interface: TerraformState_v1
+  fields:
+  - { name: provider, type: string, isRequired: true}
+  - { name: bucket, type: string, isRequired: true }
+  - { name: region, type: string, isRequired: true }
+  - { name: integrations, type: AWSTerraformStateIntegrations_v1, isList: true, isRequired: true }
+
+- name: AWSTerraformStateIntegrations_v1
+  fields:
+  - { name: integration, type: string, isRequired: true }
+  - { name: key, type: string, isRequired: true }
+
 - name: ACMDomain_v1
   fields:
   - { name: domain_name, type: string, isRequired: true }
@@ -969,7 +1050,55 @@
   - { name: vault_tls_secret_path, type: string }
   - { name: vault_tls_secret_version, type: int }
 
-- name: NamespaceTerraformResource_v1
+- name: NamespaceExternalResource_v1
+  isInterface: true
+  interfaceResolve:
+    strategy: fieldMap
+    field: provider
+    fieldMap:
+      aws: NamespaceTerraformProviderResourceAWS_v1
+      gcp-project: NamespaceTerraformProviderResourceGCPProject_v1
+  fields:
+  - { name: provider, type: string, isRequired: true }
+  - { name: provisioner, type: ExternalResourcesProvisioner_v1, isRequired: true, isInterface: true }
+
+- name: NamespaceTerraformProviderResourceAWS_v1
+  interface: NamespaceExternalResource_v1
+  fields:
+  - { name: provider, type: string, isRequired: true }
+  - { name: provisioner, type: AWSAccount_v1, isRequired: true }
+  - { name: resources, type: NamespaceTerraformResourceAWS_v1, isRequired: true, isList: true, isInterface: true }
+
+- name: NamespaceTerraformProviderResourceGCPProject_v1
+  interface: NamespaceExternalResource_v1
+  fields:
+  - { name: provider, type: string, isRequired: true }
+  - { name: provisioner, type: GcpProject_v1, isRequired: true }
+  - { name: resources, type: NamespaceTerraformResourceGCP_v1, isRequired: true, isList: true, isInterface: true }
+
+- name: NamespaceTerraformResourceGCP_v1
+  isInterface: true
+  interfaceResolve:
+    strategy: fieldMap
+    field: provider
+    fieldMap:
+      dns-zone: NamespaceTerraformResourceManagedZone_v1
+  fields:
+  - { name: provider, type: string, isRequired: true }
+  - { name: identifier, type: string, isRequired: true }
+  - { name: output_resource_name, type: string }
+  - { name: annotations, type: json }
+
+- name: NamespaceTerraformResourceManagedZone_v1
+  interface: NamespaceTerraformResourceGCP_v1
+  fields:
+  - { name: provider, type: string, isRequired: true }
+  - { name: identifier, type: string, isRequired: true }
+  - { name: name, type: string, isRequired: true }
+  - { name: output_resource_name, type: string }
+  - { name: annotations, type: json }
+
+- name: NamespaceTerraformResourceAWS_v1
   isInterface: true
   interfaceResolve:
     strategy: fieldMap
@@ -998,6 +1127,8 @@
       route53-zone: NamespaceTerraformResourceRoute53Zone_v1
   fields:
   - { name: provider, type: string, isRequired: true }
+  # keeping account as required for backwards compatibility.
+  # as long as we do not query for it, things will work.
   - { name: account, type: string, isRequired: true }
   - { name: identifier, type: string, isRequired: true }
   - { name: output_resource_name, type: string }
@@ -1021,7 +1152,7 @@
   - { name: data, type: json }
 
 - name: NamespaceTerraformResourceASG_v1
-  interface: NamespaceTerraformResource_v1
+  interface: NamespaceTerraformResourceAWS_v1
   fields:
   - { name: provider, type: string, isRequired: true }
   - { name: account, type: string, isRequired: true }
@@ -1049,7 +1180,7 @@
   - { name: upstream, type: SaasResourceTemplateTargetUpstream_v1 }
 
 - name: NamespaceTerraformResourceSecretsManager_v1
-  interface: NamespaceTerraformResource_v1
+  interface: NamespaceTerraformResourceAWS_v1
   fields:
   - { name: provider, type: string, isRequired: true }
   - { name: account, type: string, isRequired: true }
@@ -1061,7 +1192,7 @@
   - { name: annotations, type: json }
 
 - name: NamespaceTerraformResourceS3CloudFrontPublicKey_v1
-  interface: NamespaceTerraformResource_v1
+  interface: NamespaceTerraformResourceAWS_v1
   fields:
   - { name: provider, type: string, isRequired: true }
   - { name: account, type: string, isRequired: true }
@@ -1073,7 +1204,7 @@
   - { name: annotations, type: json }
 
 - name: NamespaceTerraformResourceACM_v1
-  interface: NamespaceTerraformResource_v1
+  interface: NamespaceTerraformResourceAWS_v1
   fields:
   - { name: provider, type: string, isRequired: true }
   - { name: account, type: string, isRequired: true }
@@ -1086,7 +1217,7 @@
   - { name: annotations, type: json }
 
 - name: NamespaceTerraformResourceElasticSearch_v1
-  interface: NamespaceTerraformResource_v1
+  interface: NamespaceTerraformResourceAWS_v1
   fields:
   - { name: provider, type: string, isRequired: true }
   - { name: account, type: string, isRequired: true }
@@ -1099,7 +1230,7 @@
   - { name: publish_log_types, type: string, isList: true }
 
 - name: NamespaceTerraformResourceRDS_v1
-  interface: NamespaceTerraformResource_v1
+  interface: NamespaceTerraformResourceAWS_v1
   fields:
   - { name: provider, type: string, isRequired: true }
   - { name: account, type: string, isRequired: true }
@@ -1119,7 +1250,7 @@
   - { name: annotations, type: json }
 
 - name: NamespaceTerraformResourceS3_v1
-  interface: NamespaceTerraformResource_v1
+  interface: NamespaceTerraformResourceAWS_v1
   fields:
   - { name: provider, type: string, isRequired: true }
   - { name: account, type: string, isRequired: true }
@@ -1143,7 +1274,7 @@
   - { name: assume_role, type: string }
 
 - name: NamespaceTerraformResourceServiceAccount_v1
-  interface: NamespaceTerraformResource_v1
+  interface: NamespaceTerraformResourceAWS_v1
   fields:
   - { name: provider, type: string, isRequired: true }
   - { name: account, type: string, isRequired: true }
@@ -1162,7 +1293,7 @@
   - { name: Service, type: string, isList: true }
 
 - name: NamespaceTerraformResourceSecretsManagerServiceAccount_v1
-  interface: NamespaceTerraformResource_v1
+  interface: NamespaceTerraformResourceAWS_v1
   fields:
   - { name: provider, type: string, isRequired: true }
   - { name: account, type: string, isRequired: true }
@@ -1173,7 +1304,7 @@
   - { name: annotations, type: json }
 
 - name: NamespaceTerraformResourceRole_v1
-  interface: NamespaceTerraformResource_v1
+  interface: NamespaceTerraformResourceAWS_v1
   fields:
   - { name: provider, type: string, isRequired: true }
   - { name: account, type: string, isRequired: true }
@@ -1186,7 +1317,7 @@
   - { name: annotations, type: json }
 
 - name: NamespaceTerraformResourceElastiCache_v1
-  interface: NamespaceTerraformResource_v1
+  interface: NamespaceTerraformResourceAWS_v1
   fields:
   - { name: provider, type: string, isRequired: true }
   - { name: account, type: string, isRequired: true }
@@ -1205,7 +1336,7 @@
   - { name: queues, type: KeyValue_v1, isRequired: true, isList: true }
 
 - name: NamespaceTerraformResourceSQS_v1
-  interface: NamespaceTerraformResource_v1
+  interface: NamespaceTerraformResourceAWS_v1
   fields:
   - { name: provider, type: string, isRequired: true }
   - { name: account, type: string, isRequired: true }
@@ -1222,7 +1353,7 @@
   - { name: tables, type: KeyValue_v1, isRequired: true, isList: true }
 
 - name: NamespaceTerraformResourceDynamoDB_v1
-  interface: NamespaceTerraformResource_v1
+  interface: NamespaceTerraformResourceAWS_v1
   fields:
   - { name: provider, type: string, isRequired: true }
   - { name: account, type: string, isRequired: true }
@@ -1234,7 +1365,7 @@
   - { name: annotations, type: json }
 
 - name: NamespaceTerraformResourceECR_v1
-  interface: NamespaceTerraformResource_v1
+  interface: NamespaceTerraformResourceAWS_v1
   fields:
   - { name: provider, type: string, isRequired: true }
   - { name: account, type: string, isRequired: true }
@@ -1248,7 +1379,7 @@
 
 
 - name: NamespaceTerraformResourceS3CloudFront_v1
-  interface: NamespaceTerraformResource_v1
+  interface: NamespaceTerraformResourceAWS_v1
   fields:
   - { name: provider, type: string, isRequired: true }
   - { name: account, type: string, isRequired: true }
@@ -1261,7 +1392,7 @@
   - { name: annotations, type: json }
 
 - name: NamespaceTerraformResourceS3SQS_v1
-  interface: NamespaceTerraformResource_v1
+  interface: NamespaceTerraformResourceAWS_v1
   fields:
   - { name: provider, type: string, isRequired: true }
   - { name: account, type: string, isRequired: true }
@@ -1275,7 +1406,7 @@
   - { name: annotations, type: json }
 
 - name: NamespaceTerraformResourceCloudWatch_v1
-  interface: NamespaceTerraformResource_v1
+  interface: NamespaceTerraformResourceAWS_v1
   fields:
   - { name: provider, type: string, isRequired: true }
   - { name: account, type: string, isRequired: true }
@@ -1289,7 +1420,7 @@
   - { name: annotations, type: json }
 
 - name: NamespaceTerraformResourceKMS_v1
-  interface: NamespaceTerraformResource_v1
+  interface: NamespaceTerraformResourceAWS_v1
   fields:
   - { name: provider, type: string, isRequired: true }
   - { name: account, type: string, isRequired: true }
@@ -1302,7 +1433,7 @@
   - { name: annotations, type: json }
 
 - name: NamespaceTerraformResourceKinesis_v1
-  interface: NamespaceTerraformResource_v1
+  interface: NamespaceTerraformResourceAWS_v1
   fields:
   - { name: provider, type: string, isRequired: true }
   - { name: account, type: string, isRequired: true }
@@ -1315,7 +1446,7 @@
   - { name: annotations, type: json }
 
 - name: NamespaceTerraformResourceALB_v1
-  interface: NamespaceTerraformResource_v1
+  interface: NamespaceTerraformResourceAWS_v1
   fields:
   - { name: provider, type: string, isRequired: true }
   - { name: account, type: string, isRequired: true }
@@ -1332,7 +1463,7 @@
   - { name: annotations, type: json }
 
 - name: NamespaceTerraformResourceRoute53Zone_v1
-  interface: NamespaceTerraformResource_v1
+  interface: NamespaceTerraformResourceAWS_v1
   fields:
   - { name: provider, type: string, isRequired: true }
   - { name: account, type: string, isRequired: true }
@@ -1432,7 +1563,7 @@
   - { name: description, type: string, isRequired: true }
   - { name: openshiftResources, type: NamespaceOpenshiftResource_v1, isList: true, isInterface: true, isRequired: true }
   - { name: openshiftServiceAccountTokens, type: ServiceAccountTokenSpec_v1, isList: true }
-  - { name: terraformResources, type: NamespaceTerraformResource_v1, isList: true, isInterface: true }
+  - { name: terraformResources, type: NamespaceTerraformResourceAWS_v1, isList: true, isInterface: true }
 
 - name: Namespace_v1
   fields:
@@ -1456,8 +1587,10 @@
   - { name: managedResourceNames, type: NamespaceManagedResourceNames_v1, isList: true }
   - { name: sharedResources, type: SharedResources_v1, isList: true }
   - { name: openshiftResources, type: NamespaceOpenshiftResource_v1, isList: true, isInterface: true }
+  - { name: managedExternalResources, type: boolean }
+  - { name: externalResources, type: NamespaceExternalResource_v1, isList: true, isInterface: true }
   - { name: managedTerraformResources, type: boolean }
-  - { name: terraformResources, type: NamespaceTerraformResource_v1, isList: true, isInterface: true }
+  - { name: terraformResources, type: NamespaceTerraformResourceAWS_v1, isList: true, isInterface: true }
   - { name: openshiftServiceAccountTokens, type: ServiceAccountTokenSpec_v1, isList: true }
   - { name: kafkaCluster, type: KafkaCluster_v1 }
 
@@ -1586,6 +1719,7 @@
   - { name: gitlabRepoOwners, type: CodeComponentGitlabOwners_v1 }
   - { name: gitlabHousekeeping, type: CodeComponentGitlabHousekeeping_v1 }
   - { name: jira, type: JiraServer_v1 }
+  - { name: mirror, type: string }
 
 - name: Product_v1
   fields:
@@ -1661,7 +1795,7 @@
     synthetic:
       schema: /dependencies/jenkins-config-1.yml
       subAttr: app
-  - name: saasFilesV2
+  - name: saasFiles
     type: SaasFile_v2
     isList: true
     synthetic:
@@ -1672,6 +1806,12 @@
     isList: true
     synthetic:
       schema: /app-sre/sre-checkpoint-1.yml
+      subAttr: app
+  - name: sloDocuments
+    type: SLODocument_v1
+    isList: true
+    synthetic:
+      schema: /app-sre/slo-document-1.yml
       subAttr: app
 
 - name: SaasFile_v2
@@ -1892,11 +2032,13 @@
       token: VaultInstanceAuthToken_v1
   fields:
   - { name: provider, type: string, isRequired: true }
+  - { name: secretEngine, type: string, isRequired: true }
 
 - name: VaultInstanceAuthApprole_v1
   interface: VaultInstanceAuth_v1
   fields:
   - { name: provider, type: string, isRequired: true }
+  - { name: secretEngine, type: string, isRequired: true }
   - { name: roleID, type: VaultSecret_v1, isRequired: true }
   - { name: secretID, type: VaultSecret_v1, isRequired: true }
 
@@ -1904,6 +2046,7 @@
   interface: VaultInstanceAuth_v1
   fields:
   - { name: provider, type: string, isRequired: true }
+  - { name: secretEngine, type: string, isRequired: true }
   - { name: token, type: VaultSecret_v1, isRequired: true }
 
 - name: OidcPermission_v1
@@ -2189,11 +2332,12 @@
   - { name: disableUnleash, type: boolean }
   - { name: environmentAware, type: boolean }
   - { name: extraArgs, type: string }
-  - { name: extraEnv, type: IntegrationSpecExtraEnv_v1 }
+  - { name: extraEnv, type: IntegrationSpecExtraEnv_v1, isList: true }
   - { name: internalCertificates, type: boolean }
   - { name: logs, type: IntegrationSpecLogs_v1 }
   - { name: resources, type: DeployResources_v1, isRequired: true }
   - { name: shards, type: int }
+  - { name: shardingStrategy, type: string }
   - { name: sleepDurationSecs, type: int }
   - { name: state, type: boolean }
   - { name: storage, type: string }
@@ -2271,6 +2415,20 @@
   - { name: query, type: string }
   - { name: queries, type: string, isList: true }
 
+- name: QontractQuery_v1
+  fields:
+  - { name: path, type: string, isRequired: true }
+
+- name: QueryValidation_v1
+  fields:
+  - { name: schema, type: string, isRequired: true }
+  - { name: path, type: string, isRequired: true }
+  - { name: labels, type: json }
+  - { name: name, type: string, isRequired: true, isUnique: true, isSearchable: true }
+  - { name: description, type: string, isRequired: true }
+  - { name: escalationPolicy, type: AppEscalationPolicy_v1, isRequired: true }
+  - { name: queries, type: QontractQuery_v1, isList: true, isRequired: true }
+
 - name: UnleashNotifications_v1
   fields:
   - { name: slack, type: SlackOutput_v1, isList: true }
@@ -2339,7 +2497,7 @@
   - { name: clusters_v1, type: Cluster_v1, isList: true, datafileSchema: /openshift/cluster-1.yml }
   - { name: kafka_clusters_v1, type: KafkaCluster_v1, isList: true, datafileSchema: /kafka/cluster-1.yml }
   - { name: namespaces_v1, type: Namespace_v1, isList: true, datafileSchema: /openshift/namespace-1.yml }
-  - { name: gcp_projects_v1, type: GcpProject_v1, isList: true, datafileSchema: /dependencies/gcp-project-1.yml }
+  - { name: gcp_projects_v1, type: GcpProject_v1, isList: true, datafileSchema: /gcp/project-1.yml }
   - { name: quay_orgs_v1, type: QuayOrg_v1, isList: true, datafileSchema: /dependencies/quay-org-1.yml }
   - { name: quay_instances_v1, type: QuayInstance_v1, isList: true, datafileSchema: /dependencies/quay-instance-1.yml }
   - { name: jenkins_instances_v1, type: JenkinsInstance_v1, isList: true, datafileSchema: /dependencies/jenkins-instance-1.yml }
@@ -2368,6 +2526,7 @@
   - { name: sentry_teams_v1, type: SentryTeam_v1, isList: true, datafileSchema: /dependencies/sentry-team-1.yml }
   - { name: sentry_instances_v1, type: SentryInstance_v1, isList: true, datafileSchema: /dependencies/sentry-instance-1.yml }
   - { name: app_interface_sql_queries_v1, type: AppInterfaceSqlQuery_v1, isList: true, datafileSchema: /app-interface/app-interface-sql-query-1.yml }
+  - { name: query_validations_v1, type: QueryValidation_v1, isList: true, datafileSchema: /app-interface/query-validation-1.yml }
   - { name: saas_files_v2, type: SaasFile_v2, isList: true, datafileSchema: /app-sre/saas-file-2.yml }
   - { name: pipelines_providers_v1, type: PipelinesProvider_v1, isList: true, isInterface: true, datafileSchema: /app-sre/pipelines-provider-1.yml }
   - { name: unleash_instances_v1, type: UnleashInstance_v1, isList: true, datafileSchema: /app-sre/unleash-instance-1.yml }
@@ -2507,6 +2666,7 @@
   - { name: schema, type: string, isRequired: true }
   - { name: labels, type: json }
   - { name: name, type: string, isRequired: true }
+  - { name: app, type: App_v1, isRequired: true }
   - { name: namespaces, type: Namespace_v1, isList: true, isRequired: true }
   - { name: slos, type: SLODocumentSLO_v1, isList: true }
 

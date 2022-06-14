@@ -8,13 +8,11 @@ properties:
   "$schema":
     type: string
     enum:
-    - /openshift/terraform-resource-1.yml
+    - /aws/terraform-resource-2.yml
   provider:
     type: string
   annotations:
     "$ref": "/common-1.json#/definitions/annotations"
-  account:
-    "$ref": "/aws/tenant_accounts-1.yml#/properties/account"
   identifier:
     "$ref": "/common-1.json#/definitions/longIdentifier"
   name:
@@ -137,15 +135,116 @@ properties:
   secrets_prefix:
     type: string
 oneOf:
-- "$ref": "/aws/s3-1.yml"
+- additionalProperties: false
+  properties:
+    "$schema":
+      type: string
+      enum:
+      - /aws/s3-1.yml
+    provider:
+      type: string
+      enum:
+      - s3
+      - s3-cloudfront
+      - s3-sqs
+    region:
+      "$ref": "/aws/regions-1.yml#/properties/region"
+    identifier:
+      "$ref": "/common-1.json#/definitions/longIdentifier"
+    defaults:
+      type: string
+    overrides:
+      type: object
+      properties:
+        acl:
+          type: string
+          enum:
+          - private
+          - public-read
+    event_notifications:
+      type: array
+      items:
+        type: object
+        properties:
+          event_type:
+            type: array
+            items:
+              type: string
+          destination:
+            type: string
+          destination_type:
+            type: string
+            enum:
+            - sns
+            - sqs
+          filter_prefix:
+            type: string
+          filter_suffix:
+            type: string
+    sqs_identifier:
+      type: string
+    s3_events:
+      type: array
+      items:
+        type: string
+    versioning:
+      type: boolean
+    storage_class:
+      type: string
+      enum:
+      - standard
+      - reduced_redundancy
+      - standard_ia
+      - onezone_ia
+      - intelligent_tiering
+      - glacier
+      - deep_archive
+    replication_configurations:
+      type: array
+      items:
+        type: object
+        properties:
+          rule_name:
+            type: string
+          destination_bucket_identifier:
+            type: string
+          status:
+            type: string
+            enum:
+            - enabled
+            - disabled
+          storage_class:
+            type: string
+            enum:
+            - standard
+            - reduced_redundancy
+            - standard_ia
+            - onezone_ia
+            - intelligent_tiering
+            - glacier
+            - deep_archive
+        required:
+          - rule_name
+          - destination_bucket_identifier
+    bucket_policy:
+      type: object
+    output_resource_name:
+      "$ref": "/common-1.json#/definitions/longIdentifier"
+    output_format:
+      "$ref": "/openshift/terraform-output-format-1.yml"
+    allow_object_tagging:
+      type: boolean
+    kms_encryption:
+      type: boolean
+  required:
+  - identifier
+  - defaults
 - additionalProperties: false
   properties:
     provider:
       type: string
       enum:
       - aws-iam-service-account
-    account:
-      "$ref": "/aws/tenant_accounts-1.yml#/properties/account"
     identifier:
       "$ref": "/common-1.json#/definitions/longIdentifier"
     variables:
@@ -180,7 +279,6 @@ oneOf:
     annotations:
       "$ref": "/common-1.json#/definitions/annotations"
   required:
-  - account
   - identifier
 - additionalProperties: false
   properties:
@@ -188,8 +286,6 @@ oneOf:
       type: string
       enum:
       - secrets-manager-service-account
-    account:
-      "$ref": "/aws/tenant_accounts-1.yml#/properties/account"
     identifier:
       "$ref": "/common-1.json#/definitions/longIdentifier"
     secrets_prefix:
@@ -201,7 +297,6 @@ oneOf:
     annotations:
       "$ref": "/common-1.json#/definitions/annotations"
   required:
-  - account
   - identifier
   - secrets_prefix
 - additionalProperties: false
@@ -210,8 +305,6 @@ oneOf:
       type: string
       enum:
       - aws-iam-role
-    account:
-      "$ref": "/aws/tenant_accounts-1.yml#/properties/account"
     identifier:
       "$ref": "/common-1.json#/definitions/longIdentifier"
     assume_role:
@@ -243,7 +336,6 @@ oneOf:
     annotations:
       "$ref": "/common-1.json#/definitions/annotations"
   required:
-  - account
   - identifier
   - assume_role
 - additionalProperties: false
@@ -252,8 +344,6 @@ oneOf:
       type: string
       enum:
       - rds
-    account:
-      "$ref": "/aws/tenant_accounts-1.yml#/properties/account"
     region:
       "$ref": "/aws/regions-1.yml#/properties/region"
     identifier:
@@ -355,7 +445,6 @@ oneOf:
     annotations:
       "$ref": "/common-1.json#/definitions/annotations"
   required:
-  - account
   - identifier
   - defaults
 - additionalProperties: false
@@ -364,8 +453,6 @@ oneOf:
       type: string
       enum:
       - elasticache
-    account:
-      "$ref": "/aws/tenant_accounts-1.yml#/properties/account"
     identifier:
       type: string
     defaults:
@@ -402,7 +489,6 @@ oneOf:
     annotations:
       "$ref": "/common-1.json#/definitions/annotations"
   required:
-  - account
   - identifier
   - defaults
 - additionalProperties: false
@@ -411,8 +497,6 @@ oneOf:
       type: string
       enum:
       - sqs
-    account:
-      "$ref": "/aws/tenant_accounts-1.yml#/properties/account"
     region:
       "$ref": "/aws/regions-1.yml#/properties/region"
     identifier:
@@ -443,7 +527,6 @@ oneOf:
         - defaults
         - queues
   required:
-  - account
   - identifier
   - specs
 - additionalProperties: false
@@ -452,8 +535,6 @@ oneOf:
       type: string
       enum:
       - dynamodb
-    account:
-      "$ref": "/aws/tenant_accounts-1.yml#/properties/account"
     region:
       "$ref": "/aws/regions-1.yml#/properties/region"
     identifier:
@@ -484,7 +565,6 @@ oneOf:
         - defaults
         - tables
   required:
-  - account
   - identifier
   - specs
 - additionalProperties: false
@@ -493,8 +573,6 @@ oneOf:
       type: string
       enum:
       - ecr
-    account:
-      "$ref": "/aws/tenant_accounts-1.yml#/properties/account"
     region:
       "$ref": "/aws/regions-1.yml#/properties/region"
     identifier:
@@ -508,7 +586,6 @@ oneOf:
     public:
       type: boolean
   required:
-  - account
   - identifier
 - additionalProperties: false
   properties:
@@ -516,8 +593,6 @@ oneOf:
       type: string
       enum:
       - cloudwatch
-    account:
-      "$ref": "/aws/tenant_accounts-1.yml#/properties/account"
     region:
       "$ref": "/aws/regions-1.yml#/properties/region"
     identifier:
@@ -535,7 +610,6 @@ oneOf:
     annotations:
       "$ref": "/common-1.json#/definitions/annotations"
   required:
-  - account
   - identifier
   - defaults
 - additionalProperties: false
@@ -544,8 +618,6 @@ oneOf:
       type: string
       enum:
       - kms
-    account:
-      "$ref": "/aws/tenant_accounts-1.yml#/properties/account"
     identifier:
       type: string
     region:
@@ -573,7 +645,6 @@ oneOf:
     annotations:
       "$ref": "/common-1.json#/definitions/annotations"
   required:
-  - account
   - identifier
   - defaults
 - additionalProperties: false
@@ -584,8 +655,6 @@ oneOf:
       - elasticsearch
     region:
       "$ref": "/aws/regions-1.yml#/properties/region"
-    account:
-      "$ref": "/aws/tenant_accounts-1.yml#/properties/account"
     identifier:
       "$ref": "/common-1.json#/definitions/longIdentifier"
     output_resource_name:
@@ -605,7 +674,6 @@ oneOf:
         - SEARCH_SLOW_LOGS
         - ES_APPLICATION_LOGS
   required:
-  - account
   - identifier
   - defaults
 - additionalProperties: false
@@ -616,8 +684,6 @@ oneOf:
       - acm
     region:
       "$ref": "/aws/regions-1.yml#/properties/region"
-    account:
-      "$ref": "/aws/tenant_accounts-1.yml#/properties/account"
     identifier:
       "$ref": "/common-1.json#/definitions/longIdentifier"
     secret:
@@ -640,7 +706,6 @@ oneOf:
     annotations:
       "$ref": "/common-1.json#/definitions/annotations"
   required:
-  - account
   - identifier
   oneOf:
   - required:
@@ -653,8 +718,6 @@ oneOf:
       type: string
       enum:
       - kinesis
-    account:
-      "$ref": "/aws/tenant_accounts-1.yml#/properties/account"
     identifier:
       type: string
     region:
@@ -668,7 +731,6 @@ oneOf:
     annotations:
       "$ref": "/common-1.json#/definitions/annotations"
   required:
-  - account
   - identifier
   - defaults
 - additionalProperties: false
@@ -679,8 +741,6 @@ oneOf:
       - s3-cloudfront-public-key
     region:
       "$ref": "/aws/regions-1.yml#/properties/region"
-    account:
-      "$ref": "/aws/tenant_accounts-1.yml#/properties/account"
     identifier:
       "$ref": "/common-1.json#/definitions/longIdentifier"
     secret:
@@ -692,7 +752,6 @@ oneOf:
     annotations:
       "$ref": "/common-1.json#/definitions/annotations"
   required:
-  - account
   - identifier
   - secret
 - additionalProperties: false
@@ -701,8 +760,6 @@ oneOf:
       type: string
       enum:
       - alb
-    account:
-      "$ref": "/aws/tenant_accounts-1.yml#/properties/account"
     identifier:
       "$ref": "/common-1.json#/definitions/longIdentifier"
     output_resource_name:
@@ -793,7 +850,6 @@ oneOf:
     annotations:
       "$ref": "/common-1.json#/definitions/annotations"
   required:
-  - account
   - identifier
   - vpc
   - certificate_arn
@@ -807,8 +863,6 @@ oneOf:
       - secrets-manager
     region:
       "$ref": "/aws/regions-1.yml#/properties/region"
-    account:
-      "$ref": "/aws/tenant_accounts-1.yml#/properties/account"
     identifier:
       "$ref": "/common-1.json#/definitions/longIdentifier"
     secret:
@@ -820,7 +874,6 @@ oneOf:
     annotations:
       "$ref": "/common-1.json#/definitions/annotations"
   required:
-  - account
   - identifier
   - secret
 - additionalProperties: false
@@ -831,8 +884,6 @@ oneOf:
       - asg
     region:
       "$ref": "/aws/regions-1.yml#/properties/region"
-    account:
-      "$ref": "/aws/tenant_accounts-1.yml#/properties/account"
     identifier:
       "$ref": "/common-1.json#/definitions/longIdentifier"
     defaults:
@@ -892,7 +943,6 @@ oneOf:
     annotations:
       "$ref": "/common-1.json#/definitions/annotations"
   required:
-  - account
   - identifier
   - defaults
   - image
@@ -902,8 +952,6 @@ oneOf:
       type: string
       enum:
       - route53-zone
-    account:
-      "$ref": "/aws/tenant_accounts-1.yml#/properties/account"
     identifier:
       type: string
     name:
@@ -918,7 +966,6 @@ oneOf:
     annotations:
       "$ref": "/common-1.json#/definitions/annotations"
   required:
-  - account
   - identifier
   - name
 required:
