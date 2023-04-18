@@ -1513,6 +1513,7 @@ confs:
   - { name: repository, type: string, isRequired: true }
   - { name: ref, type: string, isRequired: true }
   - { name: projectPath, type: string, isRequired: true }
+  - { name: delete, type: boolean }
 
 - name: NamespaceTerraformProviderResourceGCPProject_v1
   interface: NamespaceExternalResource_v1
