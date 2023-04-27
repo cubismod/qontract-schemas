@@ -1290,7 +1290,8 @@ confs:
 - name: AWSTerraformStateIntegrations_v1
   fields:
   - { name: integration, type: string, isRequired: true }
-  - { name: key, type: string, isRequired: true }
+  - { name: key, type: string }
+  - { name: path, type: string }
 
 - name: ACMDomain_v1
   fields:

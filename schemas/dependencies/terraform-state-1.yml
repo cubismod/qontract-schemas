@@ -28,4 +28,14 @@ properties:
           type: string
         key:
           type: string
+        path:
+          type: string
+          description: for the terraform-repo schema, define a path in the bucket to store state files
       additionalProperties: false
+      oneOf:
+      - required:
+        - integration
+        - key
+      - required:
+        - integration
+        - path
