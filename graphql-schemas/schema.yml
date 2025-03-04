@@ -428,6 +428,11 @@ confs:
   fields:
   - { name: integrations, type: string, isList: true }
 
+- name: GcpPushCredentials_v1
+  fields:
+  - { name: gcr, type: VaultSecret_v1 }
+  - { name: artifactRegistry, type: VaultSecret_v1 }
+
 - name: GcpProject_v1
   interface: ExternalResourcesProvisioner_v1
   fields:

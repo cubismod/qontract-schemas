@@ -1,4 +1,3 @@
----
 "$schema": /metaschema-1.json
 version: '1.0'
 type: object
@@ -22,7 +21,14 @@ properties:
   automationToken:
     "$ref": "/common-1.json#/definitions/vaultSecret"
   pushCredentials:
-    "$ref": "/common-1.json#/definitions/vaultSecret"
+    type: object
+    additionalProperties: false
+    properties:
+      gcr:
+        "$ref": "/common-1.json#/definitions/vaultSecret"
+      artifactRegistry:
+        "$ref": "/common-1.json#/definitions/vaultSecret"
+
 required:
 - "$schema"
 - labels
