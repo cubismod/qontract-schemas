@@ -2732,6 +2732,12 @@ confs:
   - { name: description, type: string, isRequired: true }
   - { name: public, type: boolean, isRequired: true }
   - { name: mirror, type: ContainerImageMirror_v1, isRequired: false }
+  - { name: artifactRegistry, type: AppArtifactRegistryConf_v1, isRequired: false }
+
+- name: AppArtifactRegistryConf_v1
+  fields:
+  - { name: enabled, type: boolean, isRequired: true }
+  - { name: location, type: string, isRequired: true }
 
 - name: ContainerImageMirror_v1
   datafile: /dependencies/container-image-mirror-1.yml

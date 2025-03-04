@@ -142,6 +142,19 @@ properties:
                 type: boolean
               mirror:
                 "$schemaRef": "/dependencies/container-image-mirror-1.yml"
+              artifactRegistry:
+                type: object
+                additionalProperties: false
+                properties:
+                  enabled:
+                    type: boolean
+                    description: use Artifact Registry instead of GCR for mirroring this repo
+                  location:
+                    type: string
+                    description: location of the repo, used to build the `pkg.dev` endpoint
+                required:
+                - enabled
+                - location
             required:
             - name
             - description
