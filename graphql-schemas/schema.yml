@@ -2456,6 +2456,7 @@ confs:
   - { name: identifier, type: string, isRequired: true, isContextUnique: true }
   - { name: defaults, type: string, isRequired: true, isResource: true }
   - { name: es_identifier, type: string }
+  - { name: inline_policy, type: json }
   - { name: overrides, type: json }
   - { name: output_resource_name, type: string }
   - { name: output_format, type: NamespaceTerraformResourceOutputFormat_v1, isInterface: true }
